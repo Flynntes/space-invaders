@@ -35,21 +35,21 @@ function scene:create( event )
 	-- e.g. add display objects to 'sceneGroup', add touch listeners, etc.
 
 	-- display a background image
-	local background = display.newImageRect( "bg.png", display.actualContentWidth, display.actualContentHeight )
+	local background = display.newImageRect( "assets/bg.png", display.actualContentWidth, display.actualContentHeight )
 	background.anchorX = 0
 	background.anchorY = 0
 	background.x = 0 + display.screenOriginX 
 	background.y = 0 + display.screenOriginY
 	
 	-- create/position logo/title image on upper-half of the screen
-	local titleLogo = display.newImageRect( "logo.png", 640, 432 )
+	local titleLogo = display.newImageRect( "assets/logo.png", 640, 432 )
 	titleLogo.x = display.contentCenterX
 	titleLogo.y = 220
 
 	local function titleAnimation()
 		local animUp = function()
-			transition.to(titleLogo, { time=1500, y=220, alpha=0.7, rotation=-8 })
-			transition.to(titleLogo, { time=1500, y=220, alpha=0.7, rotation=-2, onComplete=titleAnimation })
+			transition.to(titleLogo, { time=3000, y=220, alpha=0.7, rotation=-8 })
+			transition.to(titleLogo, { time=3000, y=220, alpha=0.7, rotation=-2, onComplete=titleAnimation })
 		end
 
 		transition.to(titleLogo, { time=1500, y=230, alpha=1, rotation=8, onComplete=animUp })
@@ -57,12 +57,12 @@ function scene:create( event )
 
 	titleAnimation()
 	
-	
+	display.newText( 'text', 0, h, Arial )
 	
 	-- create a widget button (which will loads level1.lua on release)
 	playBtn = widget.newButton{
-		defaultFile="button.png",
-		overFile="button.png",
+		defaultFile="assets/button.png",
+		overFile="assets/button.png",
 		width=400, height=123,
 		onRelease = onPlayBtnRelease	-- event listener function
 	}

@@ -34,13 +34,14 @@ function scene:create( event )
 	-- the physical screen will likely be a different shape than our defined content area
 	-- since we are going to position the background from it's top, left corner, draw the
 	-- background at the real top, left corner.
-	local background = display.newRect( display.screenOriginX, display.screenOriginY, screenW, screenH )
-	background.anchorX = 0 
+	local background = display.newImageRect( "assets/lvl_bg.png", display.actualContentWidth, display.actualContentHeight )
+	background.anchorX = 0
 	background.anchorY = 0
-	background:setFillColor( .5 )
+	background.x = 0 + display.screenOriginX 
+	background.y = 0 + display.screenOriginY
 	
 	-- make a crate (off-screen), position it, and rotate slightly
-	local crate = display.newImageRect( "crate.png", 90, 90 )
+	local crate = display.newImageRect( "assets/crate.png", 90, 90 )
 	crate.x, crate.y = 160, -100
 	crate.rotation = 15
 	
@@ -48,19 +49,52 @@ function scene:create( event )
 	physics.addBody( crate, { density=1.0, friction=0.3, bounce=0.3 } )
 	
 	-- create a grass object and add physics (with custom shape)
-	local grass = display.newImageRect( "grass.png", screenW, 82 )
-	grass.anchorX = 0
-	grass.anchorY = 1
-	--  draw the grass at the very bottom of the screen
-	grass.x, grass.y = display.screenOriginX, display.actualContentHeight + display.screenOriginY
+	local floor = display.newRect( screenW, 82, 20, 20 )
+	floor.anchorX = 0
+	floor.anchorY = 1
+	floor:setFillColor( 0 )
+	--  draw the floor at the very bottom of the screen
+	floor.x, floor.y = display.screenOriginX, display.actualContentHeight + display.screenOriginY
 	
 	-- define a shape that's slightly shorter than image bounds (set draw mode to "hybrid" or "debug" to see)
-	local grassShape = { -halfW,-34, halfW,-34, halfW,34, -halfW,34 }
-	physics.addBody( grass, "static", { friction=0.3, shape=grassShape } )
+	local floorShape = { -halfW,-34, halfW,-34, halfW,34, -halfW,34 }
+	physics.addBody( floor, "static", { friction=0.3, shape=floorShape } )
+
+	-- Creates and returns a new player.
+    local function createPlayer( x, y, width, height, rotation )
+        local p = display.newImage( "assets/player.png", x, y )
+        p.rotation = rotation
+        p.width = 140
+        p.height = 168
+
+        return p
+    end
+
+    local player = createPlayer( display.viewableContentWidth / 2, display.viewableContentHeight / 1.2, 1, 100, 0 )
+
+    local function onTouch( event )
+        if "began" == event.phase then
+            player.isFocus = true
+
+            player.x0 = event.x - player.x
+        elseif player.isFocus then
+            if "moved" == event.phase then
+                player.x = event.x - player.x0
+            elseif "ended" == phase or "cancelled" == phase then
+                player.isFocus = false
+            end
+        end
+
+        -- Return true if the touch event has been handled.
+        return true
+    end
+
+    -- Only the background receives touches. 
+    background:addEventListener( "touch", onTouch)
 	
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
-	sceneGroup:insert( grass)
+	sceneGroup:insert( floor)
 	sceneGroup:insert( crate )
 end
 
