@@ -57,7 +57,7 @@ function scene:create( event )
 
 	titleAnimation()
 	
-	display.newText( 'text', 0, h, Arial )
+	display.newText( '© 2016 flynntes.com', 100, h/1.015, native.systemFont, 20 )
 	
 	-- create a widget button (which will loads level1.lua on release)
 	playBtn = widget.newButton{

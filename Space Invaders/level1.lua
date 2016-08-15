@@ -41,13 +41,22 @@ function scene:create( event )
 	background.y = 0 + display.screenOriginY
 	
 	-- make a crate (off-screen), position it, and rotate slightly
-	local crate = display.newImageRect( "assets/crate.png", 90, 90 )
+	local crate = display.newImageRect( "assets/rock_1.png", 90, 90 )
 	crate.x, crate.y = 160, -100
 	crate.rotation = 15
-	
+
 	-- add physics to the crate
 	physics.addBody( crate, { density=1.0, friction=0.3, bounce=0.3 } )
+
+	-- make a crate (off-screen), position it, and rotate slightly
+	local crate1 = display.newImageRect( "assets/rock_1.png", 90, 90 )
+	crate1.x, crate1.y = 300, -200
+	crate1.rotation = 15
 	
+	-- add physics to the crate1
+	physics.addBody( crate1, { density=1.0, friction=0.3, bounce=0.3 } )
+
+	--[[
 	-- create a grass object and add physics (with custom shape)
 	local floor = display.newRect( screenW, 82, 20, 20 )
 	floor.anchorX = 0
@@ -59,6 +68,7 @@ function scene:create( event )
 	-- define a shape that's slightly shorter than image bounds (set draw mode to "hybrid" or "debug" to see)
 	local floorShape = { -halfW,-34, halfW,-34, halfW,34, -halfW,34 }
 	physics.addBody( floor, "static", { friction=0.3, shape=floorShape } )
+	--]]
 
 	-- Creates and returns a new player.
     local function createPlayer( x, y, width, height, rotation )
@@ -94,7 +104,7 @@ function scene:create( event )
 	
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
-	sceneGroup:insert( floor)
+	--sceneGroup:insert( floor)
 	sceneGroup:insert( crate )
 end
 
