@@ -57,7 +57,7 @@ function scene:create( event )
 
 	titleAnimation()
 	
-	display.newText( '© 2016 flynntes.com', 100, h/1.015, native.systemFont, 20 )
+	local copyText = display.newText( '© 2016 flynntes.com', 100, h/1.015, native.systemFont, 20 )
 	
 	-- create a widget button (which will loads level1.lua on release)
 	playBtn = widget.newButton{
@@ -73,6 +73,7 @@ function scene:create( event )
 	sceneGroup:insert( background )
 	sceneGroup:insert( titleLogo )
 	sceneGroup:insert( playBtn )
+	sceneGroup:insert( copyText )
 end
 
 function scene:show( event )
@@ -110,7 +111,7 @@ function scene:destroy( event )
 	-- 
 	-- INSERT code here to cleanup the scene
 	-- e.g. remove display objects, remove touch listeners, save state, etc.
-	
+
 	if playBtn then
 		playBtn:removeSelf()	-- widgets must be manually removed
 		playBtn = nil

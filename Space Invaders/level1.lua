@@ -39,43 +39,21 @@ function scene:create( event )
 	background.anchorY = 0
 	background.x = 0 + display.screenOriginX 
 	background.y = 0 + display.screenOriginY
-	
-	-- make a crate (off-screen), position it, and rotate slightly
-	local crate = display.newImageRect( "assets/rock_1.png", 90, 90 )
-	crate.x, crate.y = 160, -100
-	crate.rotation = 15
 
-	-- add physics to the crate
-	physics.addBody( crate, { density=1.0, friction=0.3, bounce=0.3 } )
+	--HEALTH
+	health = 100
 
-	-- make a crate (off-screen), position it, and rotate slightly
-	local crate1 = display.newImageRect( "assets/rock_1.png", 90, 90 )
-	crate1.x, crate1.y = 300, -200
-	crate1.rotation = 15
-	
-	-- add physics to the crate1
-	physics.addBody( crate1, { density=1.0, friction=0.3, bounce=0.3 } )
+	local healthText = display.newText( health, 45, 30, native.systemFont, 40 )
 
-	--[[
-	-- create a grass object and add physics (with custom shape)
-	local floor = display.newRect( screenW, 82, 20, 20 )
-	floor.anchorX = 0
-	floor.anchorY = 1
-	floor:setFillColor( 0 )
-	--  draw the floor at the very bottom of the screen
-	floor.x, floor.y = display.screenOriginX, display.actualContentHeight + display.screenOriginY
-	
-	-- define a shape that's slightly shorter than image bounds (set draw mode to "hybrid" or "debug" to see)
-	local floorShape = { -halfW,-34, halfW,-34, halfW,34, -halfW,34 }
-	physics.addBody( floor, "static", { friction=0.3, shape=floorShape } )
-	--]]
-
+	--PLAYER
 	-- Creates and returns a new player.
     local function createPlayer( x, y, width, height, rotation )
         local p = display.newImage( "assets/player.png", x, y )
         p.rotation = rotation
         p.width = 140
         p.height = 168
+        p.myName = "player"
+        physics.addBody( p, "static" )
 
         return p
     end
@@ -87,9 +65,16 @@ function scene:create( event )
             player.isFocus = true
 
             player.x0 = event.x - player.x
+            
         elseif player.isFocus then
             if "moved" == event.phase then
-                player.x = event.x - player.x0
+            	posx = event.x - player.x0
+            	if (posx <= 0) then
+            		posx = 0
+            	elseif (posx >= 640) then
+            		posx = 640
+            	end
+                player.x = posx
             elseif "ended" == phase or "cancelled" == phase then
                 player.isFocus = false
             end
@@ -101,11 +86,76 @@ function scene:create( event )
 
     -- Only the background receives touches. 
     background:addEventListener( "touch", onTouch)
-	
+
+    --ROCKS
+    local numberrocks = 5 --local variable; amount can be changed
+ 
+	local function clearrock( thisrock )
+	   display.remove( thisrock ) ; thisrock = nil
+	end
+
+	local function spawnrocks()
+
+	   for i=1,numberrocks do
+	      local rock = display.newImageRect("assets/rock_1.png", 90, 90);
+	      -- rock:setReferencePoint(display.CenterReferencePoint);  --not necessary; center is default
+	      x = math.random(30, 600);
+	      y = math.random(-1000,0);
+	      rock.x = x
+	      rock.y = y
+	      rock.myName = "rock"
+	      transition.to( rock, { time=math.random(10000,15000), x=x , y=1200, onComplete=clearrock } );
+	      physics.addBody( rock, { density=1.0, friction=0.3, bounce=0.3 } );
+
+	      --Adding touch event
+	      --rock:addEventListener( "touch", touchrock );
+	   end
+
+	end
+
+	spawnrocks()
+
+	local function onGlobalCollision( event )
+
+	    if ( event.phase == "began" ) then
+	        --print( "began: " .. event.object1.myName .. " and " .. event.object2.myName )
+	        if ( event.object1.myName == "player" ) then
+	        	if ( event.object2.myName == "rock" ) then
+		        	print("Player hit rock")
+		        	health = health - 1
+		        	healthText.text = health
+		        	event.object2.myName = "rock_hit"
+		        end
+	        end
+
+	    elseif ( event.phase == "ended" ) then
+	        --print( "ended: " .. event.object1.myName .. " and " .. event.object2.myName )
+	    end
+	end
+
+	Runtime:addEventListener( "collision", onGlobalCollision )
+
+	timer.performWithDelay( 7000, spawnrocks, 0 )  --fire every 10 seconds
+
+	--LASER
+	local function clearLaser( thislaser )
+	   display.remove( thislaser ) ; thislaser = nil
+	end
+
+	local function shootLaser()
+		local laser = display.newImageRect("assets/beam.png", 90, 90);
+		laser.x = player.x
+		laser.y = display.viewableContentHeight / 1.2
+		transition.to( laser, { time=1000, x=player.x , y=-100, onComplete=clearLaser } );
+		physics.addBody( laser, "static" )
+	end
+
+	timer.performWithDelay( 200, shootLaser, 0 )  --fire every 10 seconds
+
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
 	--sceneGroup:insert( floor)
-	sceneGroup:insert( crate )
+	--sceneGroup:insert( crate )
 end
 
 
