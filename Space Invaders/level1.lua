@@ -41,7 +41,7 @@ function scene:create( event )
 	background.y = 0 + display.screenOriginY
 
 	--HEALTH
-	health = 100
+	health = 0
 
 	healthBarWidth = health*6.4
 
@@ -55,8 +55,10 @@ function scene:create( event )
 	healthBar.anchorY = 0
 	healthBar:setFillColor( 0.62549019607843, 0.13333333333333, 1, 0.5 )
 
-	local function healthCheck()
-		-- body
+	local function healthCheck() --Check if health has run out
+		if (health <= 0) then
+			composer.gotoScene( "end", "fade", 500 )
+		end
 	end
 
 	--PLAYER
@@ -268,6 +270,10 @@ function scene:destroy( event )
 	
 	package.loaded[physics] = nil
 	physics = nil
+
+	shootLaser = nil
+
+	spawnrocks = nil
 end
 
 ---------------------------------------------------------------------------------
