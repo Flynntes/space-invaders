@@ -43,7 +43,21 @@ function scene:create( event )
 	--HEALTH
 	health = 100
 
-	local healthText = display.newText( health, 45, 30, native.systemFont, 40 )
+	healthBarWidth = health*6.4
+
+	local healthText = display.newText( 'Health', 3, screenH-55, native.systemFont, 30 )
+	healthText.anchorX = 0
+	healthText.anchorY = 0
+	healthText:setFillColor( 0.62549019607843, 0.13333333333333, 1 )
+
+	local healthBar = display.newRect( 0, 1116, healthBarWidth, 20 )
+	healthBar.anchorX = 0
+	healthBar.anchorY = 0
+	healthBar:setFillColor( 0.62549019607843, 0.13333333333333, 1, 0.5 )
+
+	local function healthCheck()
+		-- body
+	end
 
 	--PLAYER
 	-- Creates and returns a new player.
@@ -65,7 +79,7 @@ function scene:create( event )
             player.isFocus = true
 
             player.x0 = event.x - player.x
-            
+
         elseif player.isFocus then
             if "moved" == event.phase then
             	posx = event.x - player.x0
@@ -115,16 +129,80 @@ function scene:create( event )
 
 	spawnrocks()
 
+	--LASER
+	local function clearLaser( thislaser )
+	   display.remove( thislaser ) ; thislaser = nil
+	end
+
+	local function shootLaser()
+		local laser = display.newImageRect("assets/beam.png", 90, 90);
+		sceneGroup:insert( laser ) --Insert into scene group
+		player:toFront() --Keep player on top
+		laser.x = player.x
+		laser.y = display.viewableContentHeight / 1.2
+		laser.myName = "laser"
+		transition.to( laser, { time=1000, x=player.x , y=80, alpha=0.6, onComplete=clearLaser } );
+		physics.addBody( laser, "static" )
+	end
+
+	timer.performWithDelay( 400, shootLaser, 0 )
+
+	local function playHitAnimation()
+
+		transition.to( player, { time=100, xScale=1.1, yScale=1.1, onComplete=
+            function()
+                transition.to( player, {time=100, xScale=1, yScale=1})
+            end
+    	})
+
+	end
+
+	local function rockExplodeAnimation(rock_target, laser_target)
+		transition.to( rock_target, { time=200, xScale=3, yScale=3, onComplete=
+            function()
+                display.remove( rock_target ) ; rock_target = nil
+                display.remove( laser_target ) ; laser_target = nil
+            end
+    	})
+
+	end
+
+	local function playDamangeAnimation()
+
+		transition.to( player, { time=100, alpha=0, onComplete=
+            function()
+                transition.to( player, {time=100,  alpha=1})
+            end
+    	})
+    	
+	end
+
 	local function onGlobalCollision( event )
 
 	    if ( event.phase == "began" ) then
-	        --print( "began: " .. event.object1.myName .. " and " .. event.object2.myName )
+	        print( "began: " .. event.object1.myName .. " and " .. event.object2.myName )
 	        if ( event.object1.myName == "player" ) then
 	        	if ( event.object2.myName == "rock" ) then
 		        	print("Player hit rock")
-		        	health = health - 1
-		        	healthText.text = health
+		        	health = health - 10
+		        	healthBar.width = health*6.4
+		        	healthBar:setFillColor( 0.62549019607843, 0.13333333333333, health/100, 0.5 )
 		        	event.object2.myName = "rock_hit"
+		        	display.remove( event.object2 ) ; event.object2 = nil
+		        	playDamangeAnimation()
+		    		healthCheck()
+		        end
+	        end
+
+	        if ( event.object1.myName == "rock" ) then
+	        	if ( event.object2.myName == "laser" ) then
+		        	print("Laser hit rock")
+		        	rockExplodeAnimation(event.object1, event.object2)
+		        end
+	       	elseif ( event.object1.myName == "laser" ) then
+	        	if ( event.object2.myName == "rock" ) then
+		        	print("Laser hit rock")
+		        	rockExplodeAnimation(event.object2, event.object2)
 		        end
 	        end
 
@@ -135,27 +213,16 @@ function scene:create( event )
 
 	Runtime:addEventListener( "collision", onGlobalCollision )
 
-	timer.performWithDelay( 7000, spawnrocks, 0 )  --fire every 10 seconds
+	timer.performWithDelay( 7000, spawnrocks, 0 )
 
-	--LASER
-	local function clearLaser( thislaser )
-	   display.remove( thislaser ) ; thislaser = nil
-	end
-
-	local function shootLaser()
-		local laser = display.newImageRect("assets/beam.png", 90, 90);
-		laser.x = player.x
-		laser.y = display.viewableContentHeight / 1.2
-		transition.to( laser, { time=1000, x=player.x , y=-100, onComplete=clearLaser } );
-		physics.addBody( laser, "static" )
-	end
-
-	timer.performWithDelay( 200, shootLaser, 0 )  --fire every 10 seconds
 
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
-	--sceneGroup:insert( floor)
-	--sceneGroup:insert( crate )
+	sceneGroup:insert( healthBar )
+	sceneGroup:insert( healthText )
+	sceneGroup:insert( player )
+
+	
 end
 
 
