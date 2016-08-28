@@ -1,6 +1,9 @@
 -----------------------------------------------------------------------------------------
 --
--- menu.lua
+-- end.lua
+-- Copyright 2016 Flynn Tesoriero
+-- https://github.com/flynntes
+-- https://flynntes.com
 --
 -----------------------------------------------------------------------------------------
 
@@ -10,9 +13,15 @@ local scene = composer.newScene()
 -- include Corona's "widget" library
 local widget = require "widget"
 
+-- include Corona's "physics" library
+local physics = require "physics"
+
 --------------------------------------------
 
 local w,h = display.contentWidth, display.contentHeight
+
+local screenW, screenH, halfW = display.actualContentWidth, display.actualContentHeight, display.contentCenterX
+
 
 -- forward declarations and other locals
 local playBtn
@@ -20,8 +29,8 @@ local playBtn
 -- 'onRelease' event listener for playBtn
 local function onPlayBtnRelease()
 	
-	-- go to level1.lua scene
-	composer.gotoScene( "level1", "fade", 500 )
+	-- go to level.lua scene
+	composer.gotoScene( "level", "fade", 500 )
 	
 	return true	-- indicates successful touch
 end
@@ -58,8 +67,17 @@ function scene:create( event )
 	titleAnimation()
 	
 	local copyText = display.newText( '© 2016 flynntes.com', 100, h/1.015, native.systemFont, 20 )
+
+	local finalTime = display.newText( 'Time: '..timeCount, screenW/2, screenH/2, native.systemFontBold, 60 )
+		--finalTime.anchorX = 0
+		--finalTime.anchorY = 0
+		finalTime:setFillColor( 0.62549019607843, 0.13333333333333, 1 )
+
+	if (timeCount > bestTime) then
+		bestTime = timeCount
+	end
 	
-	-- create a widget button (which will loads level1.lua on release)
+	-- create a widget button (which will loads level.lua on release)
 	playBtn = widget.newButton{
 		defaultFile="assets/button.png",
 		overFile="assets/button.png",
@@ -74,6 +92,7 @@ function scene:create( event )
 	sceneGroup:insert( titleLogo )
 	sceneGroup:insert( playBtn )
 	sceneGroup:insert( copyText )
+	sceneGroup:insert( finalTime )
 end
 
 function scene:show( event )
@@ -87,6 +106,8 @@ function scene:show( event )
 		-- 
 		-- INSERT code here to make the scene come alive
 		-- e.g. start timers, begin animation, play audio, etc.
+		composer.removeScene("level"); 
+		display.remove( healthBar ) ; healthBar = nil
 	end	
 end
 

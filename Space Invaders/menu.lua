@@ -1,6 +1,9 @@
 -----------------------------------------------------------------------------------------
 --
 -- menu.lua
+-- Copyright 2016 Flynn Tesoriero
+-- https://github.com/flynntes
+-- https://flynntes.com
 --
 -----------------------------------------------------------------------------------------
 
@@ -14,14 +17,17 @@ local widget = require "widget"
 
 local w,h = display.contentWidth, display.contentHeight
 
+-- Define high score
+bestTime = 0
+
 -- forward declarations and other locals
 local playBtn
 
 -- 'onRelease' event listener for playBtn
 local function onPlayBtnRelease()
 	
-	-- go to level1.lua scene
-	composer.gotoScene( "level1", "fade", 500 )
+	-- go to level.lua scene
+	composer.gotoScene( "level", "fade", 500 )
 	
 	return true	-- indicates successful touch
 end
@@ -59,7 +65,7 @@ function scene:create( event )
 	
 	local copyText = display.newText( '© 2016 flynntes.com', 100, h/1.015, native.systemFont, 20 )
 	
-	-- create a widget button (which will loads level1.lua on release)
+	-- create a widget button (which will loads level.lua on release)
 	playBtn = widget.newButton{
 		defaultFile="assets/button.png",
 		overFile="assets/button.png",
@@ -68,7 +74,10 @@ function scene:create( event )
 	}
 	playBtn.x = display.contentCenterX
 	playBtn.y = 720
-	
+
+	-- Menu music
+	menuMusic = audio.loadStream("assets/music_1.m4a")
+
 	-- all display objects must be inserted into group
 	sceneGroup:insert( background )
 	sceneGroup:insert( titleLogo )
@@ -87,6 +96,7 @@ function scene:show( event )
 		-- 
 		-- INSERT code here to make the scene come alive
 		-- e.g. start timers, begin animation, play audio, etc.
+		menuMusicPlay = audio.play( menuMusic, { channel=1, loops=-1, fadein=5000 } )
 	end	
 end
 
@@ -99,8 +109,14 @@ function scene:hide( event )
 		--
 		-- INSERT code here to pause the scene
 		-- e.g. stop timers, stop animation, unload sounds, etc.)
+
+		audio.stop( menuMusicPlay )
+		menuMusicPlay = nil
+
 	elseif phase == "did" then
 		-- Called when the scene is now off screen
+		audio.dispose( menuMusic )
+		menuMusic = nil
 	end	
 end
 
