@@ -266,6 +266,10 @@ function scene:create( event )
 	end
 
 
+	--------------
+	--ANIMATIONS--
+	--------------
+
 	local function playHitAnimation()
 
 		transition.to( player, { time=100, xScale=1.1, yScale=1.1, onComplete=
